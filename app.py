@@ -90,4 +90,4 @@ if __name__ == "__main__":
         ],
         flagging_mode="never",
         title=_L("随机对照试验生成"),
-    ).launch()
+    ).launch(css="#gradio-share-link-button-0 { display: none; }", ssr_mode=False)
