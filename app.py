@@ -1,9 +1,12 @@
+import os
 import csv
+import shutil
 import random
 import pandas as pd
 import gradio as gr
-from utils import clean_dir, TMP_DIR, EN_US
 
+EN_US = os.getenv("LANG") != "zh_CN.UTF-8"
+TMP_DIR = os.path.join(os.path.dirname(__file__), "__pycache__")
 ZH2EN = {
     "输入参与者数量": "Number of participants",
     "输入分组比率 (格式为用:隔开的数字，生成随机分组数据)": "Grouping ratio (numbers separated by : to generate randomized controlled trial)",
@@ -50,8 +53,15 @@ def random_allocate(participants: int, ratio: list, out_csv: str):
     return out_csv, pd.DataFrame(sorted_data)
 
 
+def clean_dir(dir_path: str):
+    if os.path.exists(dir_path):
+        shutil.rmtree(dir_path)
+
+    os.makedirs(dir_path)
+
+
 # outer func
-def infer(participants: float, ratios: str, cache=f"{TMP_DIR}/rct"):
+def infer(participants: float, ratios: str, cache=TMP_DIR):
     ratio = []
     status = "Success"
     out_csv = previews = None
@@ -73,8 +83,8 @@ def infer(participants: float, ratios: str, cache=f"{TMP_DIR}/rct"):
     return status, out_csv, previews
 
 
-if __name__ == "__main__":
-    gr.Interface(
+def main():
+    return gr.Interface(
         fn=infer,
         inputs=[
             gr.Number(label=_L("输入参与者数量"), value=10),
@@ -90,4 +100,8 @@ if __name__ == "__main__":
         ],
         flagging_mode="never",
         title=_L("随机对照试验生成"),
-    ).launch(css="#gradio-share-link-button-0 { display: none; }", ssr_mode=False)
+    )
+
+
+if __name__ == "__main__":
+    main().launch(css="#gradio-share-link-button-0 { display: none; }", ssr_mode=False)
